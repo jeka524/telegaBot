@@ -7,6 +7,8 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InputMediaPhoto
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.executor import start_webhook
+from aiogram.contrib.middlewares.logging import LoggingMiddleware
 
 import config
 import logging
@@ -19,6 +21,7 @@ logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token=config.BOT_TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
+dp.middleware.setup(LoggingMiddleware())
 
 users_dao = UsersDao("lohotron.db")
 asset_dao = AssetDao("lohotron.db")
@@ -123,5 +126,19 @@ async def callback_worker(call: types.CallbackQuery):
     elif call.data == "link":
         await bot.answer_callback_query(call.id)
 
+
+async def on_startup(dp):
+    logging.warning(
+        'Starting connection. ')
+    await bot.set_webhook(config.WEBHOOK_URL, drop_pending_updates=True)
+
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+    start_webhook(
+        dispatcher=dp,
+        webhook_path=config.WEBHOOK_PATH,
+        skip_updates=True,
+        on_startup=on_startup,
+        host=config.WEBAPP_HOST,
+        port=config.WEBAPP_PORT,
+    )
+    # executor.start_polling(dp, skip_updates=True)
