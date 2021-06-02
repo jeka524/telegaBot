@@ -40,7 +40,7 @@ class Form(StatesGroup):
 async def start_form(message: types.Message):
     if not users_dao.users_exist(message.from_user.id):
         users_dao.add_user(message.from_user.id)
-    await message.answer(strings.name)
+    await message.answer(strings.name, parse_mode="MarkdownV2")
     await Form.name.set()
 
 
@@ -49,17 +49,17 @@ async def name_picked(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text)
 
     await Form.next()
-    await message.answer(strings.age.format(age=message.text))
+    await message.answer(strings.age.format(age=message.text), parse_mode="MarkdownV2")
 
 
 @dp.message_handler(state=Form.age)
 async def age_picked(message: types.Message, state: FSMContext):
     if not message.text.isdigit():
-        await message.answer(strings.age_not_int)
+        await message.answer(strings.age_not_int, parse_mode="MarkdownV2")
         return
     await state.update_data(age=int(message.text))
     await Form.next()
-    await message.answer(strings.city)
+    await message.answer(strings.city, parse_mode="MarkdownV2")
 
 
 def get_keyboard_markup():
@@ -71,9 +71,9 @@ def get_keyboard_markup():
 @dp.message_handler(state=Form.city)
 async def exit_messaging(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
-    await message.answer(strings.end_conversation.format(name = user_data['name'], age = user_data['age'], city = message.text))
+    await message.answer(strings.end_conversation.format(name=user_data['name'], age=user_data['age'], city=message.text), parse_mode="MarkdownV2")
     await asyncio.sleep(random.randint(2, 4))
-    await message.answer(strings.whom_search, reply_markup=get_keyboard_markup())
+    await message.answer(strings.whom_search, reply_markup=get_keyboard_markup(), parse_mode="MarkdownV2")
     await state.finish()
 
 
@@ -95,7 +95,7 @@ async def show_next_girl(user_id: int):
 
 
 async def show_next_man(user_id: int):
-    await bot.send_message(user_id, text=strings.man_search_text)
+    await bot.send_message(user_id, text=strings.man_search_text, parse_mode="MarkdownV2")
 
 
 async def show_post(user_id: int, post_number: int):
@@ -105,7 +105,7 @@ async def show_post(user_id: int, post_number: int):
         await bot.send_photo(user_id, photos[0])
     else:
         await bot.send_media_group(user_id, media=[InputMediaPhoto(media=image) for image in photos])
-    await bot.send_message(user_id, entity.text, reply_markup=get_post_keyboard(entity.link))
+    await bot.send_message(user_id, entity.text, reply_markup=get_post_keyboard(entity.link), parse_mode="MarkdownV2")
 
 
 def get_post_keyboard(url):
@@ -121,7 +121,7 @@ def get_post_keyboard(url):
 async def callback_worker(call: types.CallbackQuery):
     if call.data == "next":  # call.data это callback_data, которую мы указали при объявлении кнопки
         await bot.answer_callback_query(call.id)
-        await show_next_man(call.from_user.id)
+        await show_next_girl(call.from_user.id)
     elif call.data == "link":
         await bot.answer_callback_query(call.id)
 
