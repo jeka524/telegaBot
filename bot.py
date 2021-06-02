@@ -49,7 +49,7 @@ async def name_picked(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text)
 
     await Form.next()
-    await message.answer(strings.age.format(age = message.text)
+    await message.answer(strings.age.format(age=message.text))
 
 
 @dp.message_handler(state=Form.age)
