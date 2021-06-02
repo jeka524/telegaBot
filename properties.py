@@ -1,5 +1,5 @@
 DB_NAME = "lohotron.db"
 
 BASE_FILE_PATH = "./photos"
-MY_ID = ""
-BOT_TOKEN = ""
+MY_ID = "804024827"
+BOT_TOKEN = "1844627293:AAG1G_ukUxpPAbu9woglpO6TGzM4DAZQQDQ"
