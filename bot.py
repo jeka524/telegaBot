@@ -1,7 +1,6 @@
 import asyncio
 import random
 
-import emoji
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InputMediaPhoto
@@ -13,6 +12,7 @@ from aiogram.contrib.middlewares.logging import LoggingMiddleware
 import config
 import logging
 
+import strings
 from AssetDao import AssetDao
 from ExcelFileDao import ExcelFileDao
 from UsersDao import UsersDao
@@ -40,7 +40,7 @@ class Form(StatesGroup):
 async def start_form(message: types.Message):
     if not users_dao.users_exist(message.from_user.id):
         users_dao.add_user(message.from_user.id)
-    await message.answer("Як вас звати?")
+    await message.answer(strings.name)
     await Form.name.set()
 
 
@@ -49,54 +49,53 @@ async def name_picked(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text)
 
     await Form.next()
-    await message.answer(f"Здраствуйте {message.text}! Сколько вам лет?")
+    await message.answer(strings.age.format(age = message.text)
 
 
 @dp.message_handler(state=Form.age)
 async def age_picked(message: types.Message, state: FSMContext):
     if not message.text.isdigit():
-        await message.answer("Введить ваш возраст (цифри)")
+        await message.answer(strings.age_not_int)
         return
     await state.update_data(age=int(message.text))
     await Form.next()
-    await message.answer("Окей. Которий город?")
+    await message.answer(strings.city)
 
 
 def get_keyboard_markup():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    markup.add('Девушку', 'Парня')  # Имена кнопок
+    markup.add(strings.girl, strings.man)  # Имена кнопок
     return markup
 
 
 @dp.message_handler(state=Form.city)
 async def exit_messaging(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
-    await message.answer(f"Отлично. {user_data['name']} подождите немного, сейчас я настрою для вас подбор, исходя из "
-                         f"вашого возраста ({user_data['age']}) и города ({message.text})")
+    await message.answer(strings.end_conversation.format(name = user_data['name'], age = user_data['age'], city = message.text))
     await asyncio.sleep(random.randint(2, 4))
-    await message.answer("Отже, кого вы ищете?", reply_markup=get_keyboard_markup())
+    await message.answer(strings.whom_search, reply_markup=get_keyboard_markup())
     await state.finish()
 
 
 @dp.message_handler(content_types=["text"])
 async def keyboard_command(message: types.Message):
     # bot.register_next_step_handler(message, callback=process_step)
-    if message.text == "Девушку":
-        await startShowGirl(message)
-    elif message.text == "Парня":
+    if message.text == strings.girl:
+        await show_next_girl(message.from_user.id)
+    elif message.text == strings.man:
         await show_next_man(message.from_user.id)
     else:
         return
 
 
-async def startShowGirl(message: types.Message):
-    await message.answer(text="Ми тілкьи по парням, спробуй того красавчика")
-
-
-async def show_next_man(user_id: int):
+async def show_next_girl(user_id: int):
     user_photo_pos = users_dao.get_user(user_id)[3]
     users_dao.update_user(user_id, (user_photo_pos + 1) % excel_dao.get_rows_number())
     await show_post(user_id, user_photo_pos)
+
+
+async def show_next_man(user_id: int):
+    await bot.send_message(user_id, text=strings.man_search_text)
 
 
 async def show_post(user_id: int, post_number: int):
@@ -111,9 +110,9 @@ async def show_post(user_id: int, post_number: int):
 
 def get_post_keyboard(url):
     keyboard = types.InlineKeyboardMarkup()
-    key_yes = types.InlineKeyboardButton(text=emoji.emojize('Написать :heart:', use_aliases=True), callback_data='link', url=url)
+    key_yes = types.InlineKeyboardButton(text=strings.link_btn_title, callback_data='link', url=url)
     keyboard.add(key_yes)
-    key_no = types.InlineKeyboardButton(text='Следуящая ->', callback_data='next')
+    key_no = types.InlineKeyboardButton(text=strings.next_grl, callback_data='next')
     keyboard.add(key_no)
     return keyboard
 
