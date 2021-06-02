@@ -73,7 +73,7 @@ async def exit_messaging(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
     await message.answer(strings.end_conversation.format(name=user_data['name'], age=user_data['age'], city=message.text))
     await asyncio.sleep(random.randint(2, 4))
-    await message.answer(strings.whom_search, reply_markup=get_keyboard_markup(), parse_mode="MarkdownV2")
+    await message.answer(strings.whom_search, reply_markup=get_keyboard_markup())
     await state.finish()
 
 
