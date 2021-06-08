@@ -12,6 +12,7 @@ if BOT_TOKEN is None:
 BASE_FILE_PATH = "./photos"
 
 HEROKU_APP_NAME = os.getenv("HEROKU_APP_NAME")
+HEROKU_MY_ID = os.getenv("HEROKU_MY_ID")
 # PORT = int(os.environ.get('PORT', '8443'))
 
 # WEBHOOK_URL=f"https://{HEROKU_APP_NAME}.herokuapp.com/{BOT_TOKEN}"
