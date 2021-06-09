@@ -12,6 +12,8 @@ from aiogram.contrib.middlewares.logging import LoggingMiddleware
 import config
 import logging
 
+from properties import MY_ID
+from config import HEROKU_MY_ID
 import strings
 from AssetDao import AssetDao
 from ExcelFileDao import ExcelFileDao
@@ -84,6 +86,8 @@ async def keyboard_command(message: types.Message):
         await show_next_girl(message.from_user.id)
     elif message.text == strings.man:
         await show_next_man(message.from_user.id)
+    elif message.text == strings.statistic and str(message.from_user.id) in [HEROKU_MY_ID, MY_ID]:
+        await message.answer(str(users_dao.get_users()))
     else:
         return
 
