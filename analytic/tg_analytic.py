@@ -34,7 +34,7 @@ def statistics(user_id, command):
 def safe_analysis(bid, user_id) -> str:
     try:
         return analysis(bid, user_id)
-    except (IndexError, TypeError):
+    except (IndexError, TypeError, ValueError):
         return "Формат запиту повинен бути таким: статистика <количество дней> <параметры запроса*> \n\n" \
                "* — Есть команды: «пользователи», «команды» и «тхт». Можно использовать одновременно. «Пользователи» " \
                "даёт статистику по людям за необходимое вам количество дней. «Команды» даёт статистику по командам за " \
