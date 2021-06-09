@@ -3,21 +3,21 @@ import random
 
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import InputMediaPhoto
+from aiogram.types import InputMediaPhoto, InputFile
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
-from aiogram.utils.executor import start_webhook
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from aiogram.utils.executor import start_webhook
 
-import config
 import logging
 
 from properties import MY_ID
-from config import HEROKU_MY_ID
-import strings
-from AssetDao import AssetDao
-from ExcelFileDao import ExcelFileDao
-from UsersDao import UsersDao
+from resourses.config import HEROKU_MY_ID
+from analytic import tg_analytic
+from resourses import strings, config
+from database.AssetDao import AssetDao
+from database.ExcelFileDao import ExcelFileDao
+from database.UsersDao import UsersDao
 
 logging.basicConfig(level=logging.INFO)
 
@@ -41,6 +41,7 @@ class Form(StatesGroup):
 @dp.message_handler(commands="start", state="*")
 async def start_form(message: types.Message):
     if not users_dao.users_exist(message.from_user.id):
+        tg_analytic.statistics(message.chat.id, message.text)
         users_dao.add_user(message.from_user.id)
     await message.answer(strings.name)
     await Form.name.set()
@@ -73,7 +74,8 @@ def get_keyboard_markup():
 @dp.message_handler(state=Form.city)
 async def exit_messaging(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
-    await message.answer(strings.end_conversation.format(name=user_data['name'], age=user_data['age'], city=message.text))
+    await message.answer(
+        strings.end_conversation.format(name=user_data['name'], age=user_data['age'], city=message.text))
     await asyncio.sleep(random.randint(2, 4))
     await message.answer(strings.whom_search, reply_markup=get_keyboard_markup())
     await state.finish()
@@ -81,15 +83,27 @@ async def exit_messaging(message: types.Message, state: FSMContext):
 
 @dp.message_handler(content_types=["text"])
 async def keyboard_command(message: types.Message):
-    # bot.register_next_step_handler(message, callback=process_step)
     if message.text == strings.girl:
+        tg_analytic.statistics(message.chat.id, message.text)
         await show_next_girl(message.from_user.id)
     elif message.text == strings.man:
+        tg_analytic.statistics(message.chat.id, message.text)
         await show_next_man(message.from_user.id)
-    elif message.text == strings.statistic and str(message.from_user.id) in [HEROKU_MY_ID, MY_ID]:
-        await message.answer(str(users_dao.get_users()))
+    elif message.text.startswith(strings.statistic) and str(message.from_user.id) in [HEROKU_MY_ID, MY_ID]:
+        await show_statists(message)
     else:
         return
+
+
+async def show_statists(message: types.Message):
+    st = message.text.split(' ')
+    if 'txt' in st or 'тхт' in st:
+        tg_analytic.safe_analysis(st, message.chat.id)
+        await message.answer_document(InputFile('%s.txt' % message.chat.id))
+        tg_analytic.remove(message.chat.id)
+    else:
+        messages = tg_analytic.safe_analysis(st, message.chat.id)
+        await message.answer(messages)
 
 
 async def show_next_girl(user_id: int):
@@ -127,6 +141,7 @@ async def callback_worker(call: types.CallbackQuery):
         await bot.answer_callback_query(call.id)
         await show_next_girl(call.from_user.id)
     elif call.data == "link":
+        tg_analytic.statistics(call.from_user.id, "Силка")
         await bot.answer_callback_query(call.id)
 
 

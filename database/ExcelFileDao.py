@@ -29,7 +29,7 @@ class ExcelFileDao:
 
 
 if __name__ == '__main__':
-    test = ExcelFileDao("data.xlsx")
+    test = ExcelFileDao("../data.xlsx")
     x = test.get_rows_number()
     print(x)
     x = test.get_row(0)

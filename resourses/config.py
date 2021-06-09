@@ -9,7 +9,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 if BOT_TOKEN is None:
     raise Exception("Please setup the .env variable TELEGRAM_TOKEN.")
 
-BASE_FILE_PATH = "./photos"
+BASE_FILE_PATH = "../photos"
 
 HEROKU_APP_NAME = os.getenv("HEROKU_APP_NAME")
 HEROKU_MY_ID = os.getenv("HEROKU_MY_ID")

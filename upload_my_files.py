@@ -3,7 +3,7 @@ import asyncio
 import logging
 from aiogram import Bot
 
-from AssetDao import AssetDao
+from database.AssetDao import AssetDao
 from properties import DB_NAME, BOT_TOKEN, MY_ID, BASE_FILE_PATH
 
 logging.basicConfig(format=u'%(filename)s [ LINE:%(lineno)+3s ]#%(levelname)+8s [%(asctime)s]  %(message)s',
